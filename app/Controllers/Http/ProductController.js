@@ -1,6 +1,17 @@
 'use strict'
 
 const Product = use('App/Models/Product')
+const tableColumns = [
+  'name',
+  'price',
+  'description',
+  'category',
+  'provider',
+  'photo01',
+  'photo02',
+  'photo03',
+  'photo04'
+]
 
 class ProductController {
   async index ({ response }) {
@@ -14,17 +25,7 @@ class ProductController {
 
   async store ({ request, response, auth }) {
     try {
-      const data = request.only([
-        'name',
-        'price',
-        'description',
-        'category',
-        'provider',
-        'photo01',
-        'photo02',
-        'photo03',
-        'photo04'
-      ])
+      const data = request.only(tableColumns)
       const products = await Product.create(data)
       return products
     } catch (error) {

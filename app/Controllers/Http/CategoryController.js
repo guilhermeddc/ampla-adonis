@@ -1,6 +1,7 @@
 'use strict'
 
 const Category = use('App/Models/Category')
+const tableColumns = ['name'];
 
 class CategoryController {
   async index ({ response }) {
@@ -14,7 +15,7 @@ class CategoryController {
 
   async store ({ request, response }) {
     try {
-      const data = request.only(['name'])
+      const data = request.only(tableColumns)
       const categories = await Category.create(data)
 
       return categories

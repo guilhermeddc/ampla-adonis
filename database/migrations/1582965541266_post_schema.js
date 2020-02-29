@@ -15,13 +15,6 @@ class PostSchema extends Schema {
         .inTable('users')
         .onUpdate('CASCADE')
         .onDelete('SET NULL')
-      table
-        .integer('image')
-        .unsigned()
-        .references('id')
-        .inTable('files')
-        .onUpdate('CASCADE')
-        .onDelete('SET NULL')
       table.timestamps()
     })
   }

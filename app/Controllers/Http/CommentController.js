@@ -1,6 +1,7 @@
 'use strict'
 
 const Commment = use('App/Models/Comment')
+const tableColumns = ['author', 'comments', 'post']
 
 class CommentController {
   async index ({ response }) {
@@ -14,11 +15,7 @@ class CommentController {
 
   async store ({ request, response }) {
     try {
-      const data = request.only([
-        'author',
-        'comments',
-        'post'
-      ])
+      const data = request.only(tableColumns)
       const comments = await Commment.create(data)
       return comments
     } catch (error) {

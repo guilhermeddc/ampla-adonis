@@ -1,4 +1,5 @@
 'use strict'
+const tableColumns = []
 
 class IntroController {
   async index ({ request, response, view }) {

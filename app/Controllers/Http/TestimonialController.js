@@ -1,6 +1,7 @@
 'use strict'
 
 const Testimonial = use('App/Models/Testimonial')
+const tableColumns = ['client', 'architect', 'description', 'image',]
 
 class TestimonialController {
   async index ({ response }) {
@@ -14,12 +15,7 @@ class TestimonialController {
 
   async store ({ request, response }) {
     try {
-      const data = request.only([
-        'client',
-        'architect',
-        'description',
-        'image',
-      ])
+      const data = request.only(tableColumns)
       const testimonials = await Testimonial.create(data)
       return testimonials
     } catch (error) {

@@ -1,6 +1,7 @@
 'use strict'
 
 const Post = use('App/Models/Post')
+const tableColumns = ['title', 'description', 'image']
 
 class PostController {
   async index ({ response }) {
@@ -14,7 +15,7 @@ class PostController {
 
   async store ({ request, response, auth }) {
     try {
-      const data = request.only(['title', 'description', 'image'])
+      const data = request.only(tableColumns)
       const posts = await Post.create({ ...data, author: auth.user.id })
       return posts
     } catch (error) {

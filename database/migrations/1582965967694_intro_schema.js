@@ -23,20 +23,6 @@ class IntroSchema extends Schema {
         .inTable('posts')
         .onUpdate('CASCADE')
         .onDelete('SET NULL')
-      table
-        .integer('logo')
-        .unsigned()
-        .references('id')
-        .inTable('files')
-        .onUpdate('CASCADE')
-        .onDelete('SET NULL')
-      table
-        .integer('background')
-        .unsigned()
-        .references('id')
-        .inTable('files')
-        .onUpdate('CASCADE')
-        .onDelete('SET NULL')
       table.timestamps()
     })
   }

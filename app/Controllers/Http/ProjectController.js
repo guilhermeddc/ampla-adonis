@@ -1,6 +1,15 @@
 'use strict'
 
 const Project = use('App/Models/Project')
+const tableColumns = [
+  'title',
+  'subtitle',
+  'description',
+  'photo01',
+  'photo02',
+  'photo03',
+  'photo04'
+]
 
 class ProjectController {
   async index ({ response }) {
@@ -14,15 +23,7 @@ class ProjectController {
 
   async store ({ request, response }) {
     try {
-      const data = request.only([
-        'title',
-        'subtitle',
-        'description',
-        'photo01',
-        'photo02',
-        'photo03',
-        'photo04'
-      ])
+      const data = request.only(tableColumns)
       const projects = await Project.create(data)
       return projects
     } catch (error) {

@@ -1,6 +1,7 @@
 'use strict'
 
 const Provider = use('App/Models/Provider')
+const tableColumns = ['name']
 
 class ProviderController {
   async index ({ response }) {
@@ -14,7 +15,7 @@ class ProviderController {
 
   async store ({ request, response }) {
     try {
-      const data = request.only(['name'])
+      const data = request.only(tableColumns)
       const providers = await Provider.create(data)
 
       return providers
