@@ -14,12 +14,27 @@ class User extends Model {
     })
   }
 
-  tokens () {
-    return this.hasMany('App/Models/Token')
+  static get hidden () {
+    return ['password']
   }
 
-  posts () {
-    return this.hasMany('App/Models/Post')
+  static get traits () {
+    return [
+      '@provider:Adonis/Acl/HasRole',
+      '@provider:Adonis/Acl/HasPermission'
+    ]
+  }
+
+  tokens () {
+    return this.hasMany('App/Model0s. /Token')
+  }
+
+  image () {
+    return this.belongsTo('App/Models/Image')
+  }
+
+  coupons () {
+    return this.belongsToMany('App/Models/Coupon')
   }
 }
 
