@@ -4,6 +4,7 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const Product = use('App/Models/Product')
+const Transformer = use('App/Transformers/Admin/ProductTransformer')
 /**
  * Resourceful controller for interacting with products
  */
@@ -17,7 +18,7 @@ class ProductController {
    * @param {Response} ctx.response
    * @param {object} ctx.pagination
    */
-  async index ({ request, response, pagination }) {
+  async index ({ transform, request, response, pagination }) {
     try {
       const name = request.input('name')
       const query = Product.query()
@@ -26,8 +27,14 @@ class ProductController {
       }
 
       const products = await query.paginate(pagination.page, pagination.limit)
-      return response.send(products)
+      const trasformProduct = await transform.paginate(products, Transformer)
+      console.log(trasformProduct);
+      console.log();
+      console.log(product);
+      return response.send(trasformProduct)
     } catch (error) {
+      console.log(error);
+
       return response.status(400).send({ status: 400, message: error.message })
     }
   }
@@ -40,12 +47,19 @@ class ProductController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store ({ request, response, transform }) {
     try {
-      const { name, description, price, image_id, category_id, provider_id } = request.all()
-      const product = await Product.create({ name, description, price, image_id, category_id, provider_id })
-      return response.status(201).send(product)
+      const {
+        name, description, price, image_id, category_id, provider_id
+      } = request.all()
+      const product = await Product.create({
+        name, description, price, image_id, category_id, provider_id
+      })
+      const trasformProduct = await transform.item(product, Transformer)
+
+      return response.status(201).send(trasformProduct)
     } catch (error) {
+      console.log(error);
       return response.status(400).send({ message: 'Erro ao processar as sua solicitação!' })
     }
   }
@@ -59,10 +73,11 @@ class ProductController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params: { id }, request, response, view }) {
+  async show ({ params: { id }, response, transform }) {
     try {
       const product = await Product.findOrFail(id)
-      return response.send(product)
+      const trasformProduct = await transform.item(product, Transformer)
+      return response.send(trasformProduct)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar as sua solicitação!' })
     }
@@ -76,13 +91,18 @@ class ProductController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params: { id }, request, response }) {
+  async update ({ params: { id }, request, response, transform }) {
     try {
       const product = await Product.findOrFail(id)
-      const { name, description, price, image_id } = request.all()
-      product.merge({ name, description, price, image_id })
+      const {
+        name, description, price, image_id, category_id, provider_id
+      } = request.all()
+      product.merge({
+        name, description, price, image_id, category_id, provider_id
+      })
       await product.save()
-      return response.status(200).send(product)
+      const trasformProduct = await transform.item(product, Transformer)
+      return response.send(trasformProduct)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar as sua solicitação!' })
     }

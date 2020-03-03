@@ -4,8 +4,16 @@
 const Model = use('Model')
 
 class SlideIntro extends Model {
-  image () {
-    return this.belongsTo('App/Models/Image')
+  images () {
+    return this.belongsToMany('App/Models/Image')
+  }
+
+  product () {
+    return this.belongsTo('App/Models/Product')
+  }
+
+  post () {
+    return this.belongsTo('App/Models/Post')
   }
 }
 

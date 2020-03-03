@@ -8,24 +8,12 @@ class SlideIntroSchema extends Schema {
     this.create('slide_intros', (table) => {
       table.increments()
       table.string('title', 80).notNullable()
-      table.integer('image_logo_id').unsigned()
-      table.integer('image_background_id').unsigned()
       table.boolean('link').defaultTo(false)
-      table.enu('route', ['blog', 'produto', 'Loja'])
+      table.enu('route', ['blog', 'produto', 'loja'])
       table.integer('product_id').unsigned()
       table.integer('post_id').unsigned()
       table.timestamps()
 
-      table
-        .foreign('image_logo_id')
-        .references('id')
-        .inTable('images')
-        .onDelete('cascade')
-      table
-        .foreign('image_background_id')
-        .references('id')
-        .inTable('images')
-        .onDelete('cascade')
       table
         .foreign('product_id')
         .references('id')
@@ -37,9 +25,28 @@ class SlideIntroSchema extends Schema {
         .inTable('posts')
         .onDelete('cascade')
     })
+
+    this.create('image_slide_intro', (table) => {
+      table.increments()
+      table.integer('image_id').unsigned()
+      table.integer('slide_intro_id').unsigned()
+      table.timestamps()
+
+      table
+        .foreign('image_id')
+        .references('id')
+        .inTable('images')
+        .onDelete('cascade')
+      table
+        .foreign('slide_intro_id')
+        .references('id')
+        .inTable('slide_intros')
+        .onDelete('cascade')
+    })
   }
 
   down () {
+    this.drop('image_slide_intro')
     this.drop('slide_intros')
   }
 }

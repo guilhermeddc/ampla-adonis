@@ -5,6 +5,7 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const Image = use('App/Models/Image')
 const { manage_single_upload, manage_multiple_upload } = use('App/Helpers')
+const Transformer = use('App/Transformers/Admin/ImageTransformer')
 const fs = use('fs')
 /**
  * Resourceful controller for interacting with images
@@ -19,12 +20,13 @@ class ImageController {
    * @param {Response} ctx.response
    * @param {object} ctx.pagination
    */
-  async index ({ request, response, pagination }) {
+  async index ({ transform, response, pagination }) {
     try {
-      const images = await Image
+      let images = await Image
         .query()
         .orderBy('id', 'DESC')
         .paginate(pagination.page, pagination.limit)
+      images = await transform.paginate(images, Transformer)
       return response.send(images)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar as sua solicitação!' })
@@ -39,7 +41,7 @@ class ImageController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store ({ request, response, transform }) {
     try {
       const fileJar = request.file('images', {
         types: ['image'],
@@ -58,7 +60,9 @@ class ImageController {
             extension: file.subtype
           })
 
-          images.push(image)
+          const trasformImage = await transform.item(image, Transformer)
+
+          images.push(trasformImage)
           return response.status(201).send({ successes: images, errors: {} })
         }
 
@@ -77,8 +81,8 @@ class ImageController {
               original_name: file.clientName,
               extension: file.subtype
             })
-
-            images.push(image)
+            const trasformImage = await transform.item(image, Transformer)
+            images.push(trasformImage)
           }
         )
       )
@@ -98,10 +102,11 @@ class ImageController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show ({ params: { id }, request, response, view }) {
+  async show ({ params: { id }, transform, response }) {
     try {
       const image = await Image.findOrFail(id)
-      return response.send(image)
+      const trasformImage = await transform.item(image, Transformer)
+      return response.send(trasformImage)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar as sua solicitação!' })
     }
@@ -121,7 +126,8 @@ class ImageController {
       const { original_name } = request.all()
       image.merge({ original_name })
       await image.save()
-      return response.status(200).send(image)
+      const trasformImage = await transform.item(image, Transformer)
+      return response.status(200).send(trasformImage)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar as sua solicitação!' })
     }
@@ -135,22 +141,19 @@ class ImageController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  // async destroy ({ params: { id }, response }) {
-  //   try {
-  //     const image = await Image.findOrFail(id)
-  //     let filepath = Helpers.publicPath(`uploads/${image.path}`)
+  async destroy ({ params: { id }, response }) {
+    try {
+      const image = await Image.findOrFail(id)
+      let filepath = Helpers.publicPath(`uploads/${image.path}`)
 
-  //     await fs.unlink(filepath, err => {
-  //       if (!err) {
-  //         await image.delete()
-  //       }
-  //     })
+      fs.unlinkSync(filepath)
+      await image.delete()
 
-  //     return response.status(204).send()
-  //   } catch (error) {
-  //     return response.status(400).send({ message: 'Não foi possivel deletar a imagem' })
-  //   }
-  // }
+      return response.status(204).send()
+    } catch (error) {
+      return response.status(400).send({ message: 'Não foi possivel deletar a imagem' })
+    }
+  }
 }
 
 module.exports = ImageController
