@@ -4,6 +4,7 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const Testimonial = use('App/Models/Testimonial')
+const Transformer = use('App/Transformers/Layout/TestimonialTransformer')
 /**
  * Resourceful controller for interacting with testimonials
  */
@@ -17,10 +18,11 @@ class TestimonialController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, pagination }) {
+  async index ({ transform, response, pagination }) {
     try {
       const testimonials = await Testimonial.query().paginate(pagination.page, pagination.limit)
-      return response.send(testimonials)
+      const trasformTestimonials = await transform.paginate(testimonials, Transformer)
+      return response.send(trasformTestimonials)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar a sua solicitação!' })
     }
@@ -34,11 +36,12 @@ class TestimonialController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store ({ transform, request, response }) {
     try {
       const { client, architect, description, image_id } = request.all()
       const testimonial = await Testimonial.create({ client, architect, description, image_id })
-      return response.status(201).send(testimonial)
+      const trasformTestimonial = await transform.paginate(testimonial, Transformer)
+      return response.status(201).send(trasformTestimonial)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar a sua solicitação!' })
     }
@@ -52,13 +55,14 @@ class TestimonialController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params: { id }, request, response }) {
+  async update ({ params: { id }, transform, request, response }) {
     try {
       const testimonial = await Testimonial.findOrFail(id)
       const { client, architect, description, image_id } = request.all()
       testimonial.merge({ client, architect, description, image_id })
       await testimonial.save()
-      return response.status(200).send(testimonial)
+      const trasformTestimonial = await transform.paginate(testimonial, Transformer)
+      return response.status(200).send(trasformTestimonial)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar a sua solicitação!' })
     }

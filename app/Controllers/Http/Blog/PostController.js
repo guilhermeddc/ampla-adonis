@@ -4,6 +4,7 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const Post = use('App/Models/Post')
+const Transformer = use('App/Transformers/Blog/PostTransformer')
 /**
  * Resourceful controller for interacting with posts
  */
@@ -17,7 +18,7 @@ class PostController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async index ({ request, response, pagination }) {
+  async index ({ transform, request, response, pagination }) {
     try {
       const title = request.input('title')
       const query = Post.query()
@@ -26,7 +27,8 @@ class PostController {
       }
 
       const posts = await query.paginate(pagination.page, pagination.limit)
-      return response.send(posts)
+      const trasformPost = await transform.paginate(posts, Transformer)
+      return response.send(trasformPost)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar a sua solicitação!' })
     }
@@ -40,11 +42,12 @@ class PostController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store ({ transform, request, response }) {
     try {
       const { title, description, author, image_id } = request.all()
       const post = await Post.create({ title, description, author, image_id })
-      return response.status(201).send(post)
+      const trasformPost = await transform.paginate(post, Transformer)
+      return response.status(201).send(trasformPost)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar a sua solicitação!' })
     }
@@ -57,10 +60,11 @@ class PostController {
    * @param {object} ctx
    * @param {Response} ctx.response
    */
-  async show ({ params: { id }, response }) {
+  async show ({ params: { id }, transform, response }) {
     try {
       const post = await Post.findOrFail(id)
-      return response.send(post)
+      const trasformPost = await transform.paginate(post, Transformer)
+      return response.send(trasformPost)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar a sua solicitação!' })
     }
@@ -74,13 +78,14 @@ class PostController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params: { id }, request, response }) {
+  async update ({ params: { id }, transform, request, response }) {
     try {
       const post = await Post.findOrFail(id)
       const { title, description, author, image_id } = request.all()
       post.merge({ title, description, author, image_id })
       await post.save()
-      return response.status(200).send(post)
+      const trasformPost = await transform.paginate(post, Transformer)
+      return response.status(200).send(trasformPost)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar a sua solicitação!' })
     }

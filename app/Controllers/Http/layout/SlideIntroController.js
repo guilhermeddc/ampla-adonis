@@ -4,6 +4,7 @@
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 const SlideIntro = use('App/Models/SlideIntro')
+const Transformer = use('App/Transformers/Layout/SlideIntroTransformer')
 /**
  * Resourceful controller for interacting with slideintros
  */
@@ -16,10 +17,11 @@ class SlideIntroController {
    * @param {Response} ctx.response
    * @param {object} ctx.pagination
    */
-  async index ({ response, pagination }) {
+  async index ({ transform, response, pagination }) {
     try {
-      const slideintros = await SlideIntro.query().paginate(pagination.page, pagination.limit)
-      return response.send(slideintros)
+      const slideIntros = await SlideIntro.query().paginate(pagination.page, pagination.limit)
+      const trasformSlideIntros = await transform.paginate(slideIntros, Transformer)
+      return response.send(trasformSlideIntros)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar a sua solicitação!' })
     }
@@ -33,30 +35,15 @@ class SlideIntroController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store ({ request, response }) {
+  async store ({ transform, request, response }) {
     try {
-      const {
-        title, image_logo_id, image_background_id, link, route, product_id, post_id
-      } = request.all()
-      const slideintro = await SlideIntro.create({
-        title, image_logo_id, image_background_id, link, route, product_id, post_id
-      })
-      return response.status(201).send(slideintro)
+      const { title, link, route, product_id, post_id } = request.all()
+      const slideIntro = await SlideIntro.create({ title, link, route, product_id, post_id })
+      const trasformSlideIntro = await transform.paginate(slideIntro, Transformer)
+      return response.status(201).send(trasformSlideIntro)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar a sua solicitação!' })
     }
-  }
-
-  /**
-   * Display a single slideintro.
-   * GET slideintros/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async show ({ params, request, response, view }) {
   }
 
   /**
@@ -67,13 +54,14 @@ class SlideIntroController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update ({ params: { id }, request, response }) {
+  async update ({ params: { id }, transform, request, response }) {
     try {
       const slideintro = await SlideIntro.findOrFail(id)
       const { title, description, image_id } = request.all()
       slideintro.merge({ title, description, image_id })
       await slideintro.save()
-      return response.status(200).send(slideintro)
+      const trasformSlideIntro = await transform.paginate(slideIntro, Transformer)
+      return response.status(200).send(trasformSlideIntro)
     } catch (error) {
       return response.status(400).send({ message: 'Erro ao processar a sua solicitação!' })
     }
